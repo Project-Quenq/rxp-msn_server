@@ -1,0 +1,17 @@
+{
+  "type": "module",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "chalk": "^5.6.0",
+    "dompurify": "^3.2.6",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  }
+}

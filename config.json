@@ -1,0 +1,6 @@
+{
+    "server": ["0.0.0.0", 4646],
+    "maxHistoryLength": 150,
+    "keepAliveEverySeconds": 10,
+    "userId": "user_{timestamp}{random}"
+}
