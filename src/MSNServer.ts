@@ -1,7 +1,7 @@
 import { WSManager } from "./managers/WSManager.js";
 import WebSocket from "ws";
 import { IConfig } from "./interfaces/IConfig.js";
-import { UserData, UserStatus } from "./interfaces/User.js";
+import { UserStatus } from "./interfaces/User.js";
 //@ts-ignore
 import { WSProtocol } from "./Protocol.js";
 import { WSEvents, WSMessages } from "./interfaces/WebSocket.js";
@@ -51,7 +51,7 @@ export class MSNServer {
         const message = WSProtocol.decodeData(data);
         
         // login handler thingy
-        if (message.type === "LOGIN") {
+        if (message.type === WSMessages.LoginMSN) {
             const name = message.args[0];
             const avatar = message.args[1];
             //@ts-ignore
@@ -72,12 +72,14 @@ export class MSNServer {
                 //@ts-ignore
                 avatar
             });
-        } else if (message.type === "goctct"/*go to contact*/) {
+        } else if (message.type === WSMessages.SubContact/*go to contact*/) {
             const target = message.args[0];
             const subscriber = this.__ws.getClientId(socket);
             
             //@ts-ignore
             this.subToContact.set(subscriber, target);
+        } else if (message.type === WSMessages.NewMessage) {
+            
         }
     }
 

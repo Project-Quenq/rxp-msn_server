@@ -84,14 +84,18 @@ export class WSManager {
             if (client.readyState === WebSocket.OPEN && !excluded.includes(client)) client.send(msg);
         });
     }
+    public broadcastTo(to: WebSocket | WebSocket[], message: any) {
+        const msg = JSON.stringify(message);
 
-    public sendNop(socket?: WebSocket) {
+        const included = Array.isArray(to) ? to : [to];
+        this.getClients().forEach((client) => {
+            if (client.readyState === WebSocket.OPEN && included.includes(client)) client.send(msg);
+        });
+    }
+
+    public sendNop() {
         const msg = "nop-";
-        if (socket) {
-            this.send(socket, msg);
-        } else {
-            this.broadcast(msg);
-        }
+        this.broadcast(msg);
     }
 
     public connectedClients(): number {

@@ -5,5 +5,7 @@ export enum WSEvents {
 }
 export enum WSMessages {
     NewMessage = "sndmsg",
-    Kick = "kIck.close|"
+    Kick = "kIck.close|",
+    SubContact = "goctct",
+    LoginMSN = "LOGIN"
 }
