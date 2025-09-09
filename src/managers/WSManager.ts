@@ -66,7 +66,7 @@ export class WSManager {
 
     public send(socket: WebSocket, message: any) {
         if (socket.readyState !== WebSocket.OPEN) return;
-        socket.send(JSON.stringify(message));
+        socket.send(message);
     }
 
     public broadcast(message: any) {
@@ -77,7 +77,7 @@ export class WSManager {
     }
 
     public broadcastExcept(except: WebSocket | WebSocket[], message: any) {
-        const msg = JSON.stringify(message);
+        const msg = message;
 
         const excluded = Array.isArray(except) ? except : [except];
         this.getClients().forEach((client) => {
@@ -85,7 +85,7 @@ export class WSManager {
         });
     }
     public broadcastTo(to: WebSocket | WebSocket[], message: any) {
-        const msg = JSON.stringify(message);
+        const msg = message;
 
         const included = Array.isArray(to) ? to : [to];
         this.getClients().forEach((client) => {
@@ -94,8 +94,7 @@ export class WSManager {
     }
 
     public sendNop() {
-        const msg = "nop-";
-        this.broadcast(msg);
+        this.broadcast("nop-");
     }
 
     public connectedClients(): number {

@@ -39,7 +39,6 @@ export class MSNServer {
                 this.__ws.getClients().find((socket) => client === socket)?.send('%OK&');
                 this.sendGlobalMessage(`${this.__ws.clientIds.get(client)} has signed in.`);
             }, 2000);
-            
         });
         this.__ws.on(WSEvents.DelSocket, (client: WebSocket, ip: string, id: string) => {
             if (this.connected.find((socket) => socket === client)) this.connected = this.connected.filter(socket => socket !== client);
@@ -47,7 +46,7 @@ export class MSNServer {
         });
     }
 
-    onMessage(socket: WebSocket, data: string) {
+    onMessage(socket: WebSocket, data: string): any {
         const message = WSProtocol.decodeData(data);
         
         // login handler thingy
@@ -59,7 +58,7 @@ export class MSNServer {
             const desc = message.args[3];
             if (!message.args[0]) return this.kick(socket, 'invalid_login');
             // TODO: length logic
-            if (!name?.match(/^[a-zA-Z0-9_.]+$/)) return this.kick(socket, 'Invalid username (an username should only contain letters, numbers, a dot or an underscore and 4-16 characters)');
+            if (!name?.match(/^[a-zA-Z0-9_.]+$/) || name === "§") return this.kick(socket, 'Invalid username (an username should only contain letters, numbers, a dot or an underscore and 4-16 characters)');
 
             this.connected.push(socket);
             this.__ws.clientsUsers.set(socket, {
@@ -79,16 +78,23 @@ export class MSNServer {
             //@ts-ignore
             this.subToContact.set(subscriber, target);
         } else if (message.type === WSMessages.NewMessage) {
-            
+            const [channel, msg] = message.args;
+            //@ts-ignore
+            const decoded = WSProtocol.decodeMessage([channel, msg]);
+
+            if (!decoded.channel || !decoded.message || ((decoded.user?.length !< 4 && decoded.user?.length !> 16) && decoded.user !== "§")) return this.kick(socket, "not_valid_packet");
+
         }
     }
 
-    kick(socket: WebSocket, reason?: string) {
+    kick(socket: WebSocket, reason?: string): boolean {
         socket.send(WSMessages.Kick + `You've been disconnected from MSN${reason ? `: ${reason}` : ""}`);
         socket.close();
+        if (socket.readyState === socket.CLOSED) return true;
+        else return false;
     }
 
-    sendGlobalMessage(html: string) {
+    sendGlobalMessage(html: string): void {
         //@ts-ignore
         this.__ws.broadcast(WSProtocol.encode(WSMessages.NewMessage, WSProtocol.encodeData([WSProtocol.encodeMessage(`${btoa('global')}@§`, html)]))); // the username § means System
     }
