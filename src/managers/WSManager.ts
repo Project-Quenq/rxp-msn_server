@@ -19,8 +19,8 @@ export class WSManager {
         this.__ws = new WebSocketServer({ port, host: host || "127.0.0.1" });
 
         this.__ws.on("connection", (socket: WebSocket, req) => {
-            const ip = req.socket.remoteAddress || "unknown";
-            const id = userId.replace('{timestamp}', Date.now().toString()).replace('{random}', Math.random().toString(36).slice(2, 8));
+            const ip = req.socket.remoteAddress || "[?[unknown]?]";
+            const id = userId.replace('{timestamp}', Date.now().toString()).replaceAll('{random}', Math.random().toString(36).slice(2, 8));
             this.clientIds.set(socket, id);
 
             socket.on("message", (data) => this.emit(WSEvents.Message, socket, data.toString()));

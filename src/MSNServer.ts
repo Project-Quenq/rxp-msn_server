@@ -11,9 +11,9 @@ export class MSNServer {
     private connected: WebSocket[];
 
     public onlineUsers: string[]; // user id to store here
-    public subToContact: Map<WebSocket, WebSocket>; // local socket and remote socket
+    public subToContact: Map<WebSocket, string>; // local socket and remote user id
 
-    public lastNudge: { user: string ; timestamp: number };
+    public lastNudge: Map<string, number>; // user id and timestamp
 
     constructor(config: IConfig) {
         // initialize the variables
@@ -34,11 +34,15 @@ export class MSNServer {
             console.log(`New Connection: From the IP ${ip} with ID ${id}`);
             setTimeout(() => client.send(`è----|${id}-=°`), 500);
             setTimeout(() => {
-                if (!this.connected.some((socket) => socket === client)) return this.kick(client, 'Not logged in (non_verified_connection_identity)');
-                if (!this.subToContact.get(client) || !this.connected.some((socket) => socket === this.subToContact.get(client))) return this.kick(client, 'No active chat');
+                if (!this.connected.includes(client)) {
+                    console.log(`Client didn't logged in, client ID is ${this.__ws.clientIds.get(client)}!`);
+                    return this.kick(client, 'Not logged in (non_verified_connection_identity)');
+                };
+                //@ts-ignore
+                if (!this.subToContact.get(client) || !this.connected.some((socket) => socket === this.subToContact.get(this.__ws.getClientId(client)))) return this.kick(client, 'No active chat');
                 this.__ws.getClients().find((socket) => client === socket)?.send('%OK&');
                 this.sendGlobalMessage(`${this.__ws.clientIds.get(client)} has signed in.`);
-            }, 2000);
+            }, 2300);
         });
         this.__ws.on(WSEvents.DelSocket, (client: WebSocket, ip: string, id: string) => {
             if (this.connected.find((socket) => socket === client)) this.connected = this.connected.filter(socket => socket !== client);
@@ -58,7 +62,7 @@ export class MSNServer {
             const desc = message.args[3];
             if (!message.args[0]) return this.kick(socket, 'invalid_login');
             // TODO: length logic
-            if (!name?.match(/^[a-zA-Z0-9_.]+$/) || name === "§") return this.kick(socket, 'Invalid username (an username should only contain letters, numbers, a dot or an underscore and 4-16 characters)');
+            if (!name?.match(/^[a-zA-Z0-9_.]+$/) || ((name.length !< 4 || name.length !> 16) && name !== "§")) return this.kick(socket, 'Invalid username (an username should only contain letters, numbers, a dot or an underscore and 4-16 characters)');
 
             this.connected.push(socket);
             this.__ws.clientsUsers.set(socket, {
@@ -71,6 +75,7 @@ export class MSNServer {
                 //@ts-ignore
                 avatar
             });
+            socket.send('LOGGED$IN^ç');
         } else if (message.type === WSMessages.SubContact/*go to contact*/) {
             const target = message.args[0];
             const subscriber = this.__ws.getClientId(socket);

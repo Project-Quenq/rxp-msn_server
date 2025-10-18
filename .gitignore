@@ -2,3 +2,4 @@ node_modules/
 dist/
 _data/
 package-lock.json
+config.bat

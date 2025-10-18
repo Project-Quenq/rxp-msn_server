@@ -25,7 +25,7 @@ class _WSProto_ {constructor(){}
      * @param {string} data 
      */
     decodeData(data) {
-        const [type, payload] = data.split('§+');
+        const [type, payload = ""] = data.split('§+');
         let args = [];
         let i = 0;
         while (i < payload.length) {
